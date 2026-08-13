@@ -60,7 +60,8 @@ UNIX DOMAIN FUNCTIONS
 // Server
 
 void Connection::server_connection_unix_domain(const char* SOCKET_PATH, const int MAX_CLIENT_THREADS){
-    // socket address structure
+    // sockaddr_un is the address structure used for AF_UNIX sockets
+    // It stores a local filesystem path, not an IP address or port
     struct sockaddr_un addr;
     // max buffer size of data
     char buffer[255] = {0};
@@ -78,14 +79,16 @@ void Connection::server_connection_unix_domain(const char* SOCKET_PATH, const in
         exit(1);
     }
 
-    memset(&addr, 0 , sizeof(addr)); // Set every byte in addr to 0, uses num bytes of struct sockaddr_un
+    // Zero the entire struct to avoid garbage values in padding/unused fields
+    memset(&addr, 0, sizeof(addr));
 
-    // AF_UNIX is a unix domain socket
-    // this means it is not tcp/ip server so it cannot be used for anything than your own system
+    // AF_UNIX means this is a local socket, not TCP/IP
     addr.sun_family = AF_UNIX;
-    // strncpy will not write past array bounds
-    // -1 is room for terminating null byte
-    strncpy(addr.sun_path, SOCKET_PATH, sizeof(addr.sun_path)- 1);
+    // sun_path is the filesystem path used by the socket
+    strncpy(addr.sun_path, SOCKET_PATH, sizeof(addr.sun_path) - 1);
+    // add null terminator
+    addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
+
     // make sure file does not exist already so no errors happen about used address
     unlink(SOCKET_PATH);
 
