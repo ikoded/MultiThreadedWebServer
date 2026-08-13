@@ -19,8 +19,7 @@ The first thing I check is `ss -lx | grep /tmp` and `ss -ax | grep /tmp` to make
 Then I check memory leaks with valgrind: `valgrind --leak-check=full --show-leak-kinds=all ./build/webserver`
 
 Then I use strace to ensure all sockets in program closed properly with: `strace -e trace=open,close,socket,bind,listen -f ./build/webserver`
-
-    Errors are definitely harder to read with this, you need to ensure each socket has a close.
+Errors are definitely hard to read with this, you just need to ensure each socket has a close.
 
 Another one you can use to watch in second terminal as runs is: `watch -n 1 'ps aux | grep webserver; ss -ax | grep mysocket'`
 
