@@ -6,7 +6,7 @@ A low level C++ multithreaded webserver for fun. Wanting to learn low level netw
 
 ## How To Build/Run
 
-First run `cmake -S . -B build`, and then build with `cmake --build build -j`. This project is confirmed to work on Ubuntu.
+First run `cmake -S . -B build`, and then build with `cmake --build build -j`, finally run `./build/webserver`. This project is confirmed to work on Ubuntu with WSL.
 
 ---
 

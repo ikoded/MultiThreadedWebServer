@@ -66,7 +66,7 @@ void Connection::server_connection_unix_domain(const char* SOCKET_PATH, const in
     char buffer[255] = {0};
 
     // file for fun and tracking order it comes back
-    std::ofstream myFile("../data/thread-message.txt", std::ios::app);
+    std::ofstream myFile("data/thread-message.txt", std::ios::app);
     myFile << "RUN WITH " << MAX_CLIENT_THREADS << " MAX CLIENT THREADS" << "\n";
     myFile.close(); // close file as it will be used in loop
 
@@ -134,7 +134,7 @@ void Connection::server_connection_unix_domain(const char* SOCKET_PATH, const in
     }
 
     // add new lines to end for clarity in next runs
-    myFile.open("../data/thread-message.txt", std::ios::app);
+    myFile.open("data/thread-message.txt", std::ios::app);
     myFile << "\n\n";
     myFile.close();
 
@@ -151,7 +151,7 @@ bool Connection::server_read_data_client_connection_unix_domain(){
     char buffer[255] = {0};
     // try to recieve data now
     if(recv(client_fd, buffer, (sizeof(buffer) - 1), 0) != -1){
-        std::ofstream myFile("../data/thread-message.txt", std::ios::app); // append to file
+        std::ofstream myFile("data/thread-message.txt", std::ios::app); // append to file
         myFile << buffer << " "; // this can come in random so each run looks different after first
         myFile.close(); // make sure to close
 
