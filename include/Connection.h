@@ -9,31 +9,27 @@
 
 class Connection{
     public:
-        // Getter and Setters
+        // Getters (needed for external classes)
         struct sockaddr_un getAddrUn();
-        void setAddrUn(struct sockaddr_un addr);
-
-        int getClientFd();
-        void setClientFd(int client_fd);
-
-        int getServerFd();
-        void setServerFd(int server_fd);
 
         int getClientsProccessed();
-        void setClientsProccessed(int clients);
-        void incrementClientsProccessed();
 
         bool getServerReady();
-        void setServerReady(bool server_ready);
 
         // UNIX Domains request functions
         // Server
-        void server_connection_unix_domain(const char* SOCKET_PATH, const int MAX_CLIENT_THREADS);
+        void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
         bool server_read_data_client_connection_unix_domain();
+        Connection();
     private:
+        // UNIX Domains
         struct sockaddr_un addr_un; // address of socket unix domain
         int client_fd; // setting clientfd for passing
         int server_fd; // setting serverfd for passing
         std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
-        bool server_ready = false; // ensuring server is ready
+        bool server_ready = false; // ensuring server is ready, not atomic since only one thread touches this
+        // Configurables/Constants
+        const char* SOCKET_PATH = "/tmp/mysocket"; // constant place for socket path
+        char buffer[255] = {0}; // max buffer size of data
+        
 };

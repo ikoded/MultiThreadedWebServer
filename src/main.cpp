@@ -2,8 +2,6 @@
 #include "../include/Client.h"
 #include <chrono>
 
-#define SOCKET_PATH "/tmp/mysocket"
-
 std::list<const char*> messages = {"Hello_1",
     "Server_2",
     "This_3",
@@ -31,7 +29,7 @@ int main(){
     Client client; // Client Threads that call to Server
 
     // Create connection at /tmp/mysocket, Server Thread
-    std::thread serverThread(&Connection::server_connection_unix_domain,&connection, SOCKET_PATH, MAX_CLIENT_THREADS);
+    std::thread serverThread(&Connection::server_connection_unix_domain,&connection, MAX_CLIENT_THREADS);
 
     // Set up worker threads and run
     std::vector<std::thread> clientThreads;
@@ -51,10 +49,6 @@ int main(){
     }
     // Make sure server thread finishes
     if(serverThread.joinable()) serverThread.join();
-
-    // Unlink it case spot is taken
-    // Redundant because server does this at start but like to be safe
-    unlink(SOCKET_PATH);
 
     auto end_time = std::chrono::steady_clock::now();
     metrics(connection, (end_time-start_time));
