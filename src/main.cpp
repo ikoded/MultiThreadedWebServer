@@ -2,8 +2,6 @@
 #include "../include/Client.h"
 #include <chrono>
 
-#define SOCKET_PATH "/tmp/mysocket"
-
 std::list<const char*> messages = {"Hello_1",
     "Server_2",
     "This_3",
@@ -51,10 +49,6 @@ int main(){
     }
     // Make sure server thread finishes
     if(serverThread.joinable()) serverThread.join();
-
-    // Unlink it case spot is taken
-    // Redundant because server does this at start but like to be safe
-    unlink(SOCKET_PATH);
 
     auto end_time = std::chrono::steady_clock::now();
     metrics(connection, (end_time-start_time));
