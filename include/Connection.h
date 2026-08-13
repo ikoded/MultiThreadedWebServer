@@ -27,14 +27,13 @@ class Connection{
         void setServerReady(bool server_ready);
 
         // UNIX Domains request functions
-        // server
+        // Server
         void server_connection_unix_domain(const char* SOCKET_PATH, const int MAX_CLIENT_THREADS);
         bool server_read_data_client_connection_unix_domain();
-        
     private:
-        struct sockaddr_un addr_un;
-        int client_fd;
-        int server_fd;
+        struct sockaddr_un addr_un; // address of socket unix domain
+        int client_fd; // setting clientfd for passing
+        int server_fd; // setting serverfd for passing
         std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
-        bool server_ready = false;
+        bool server_ready = false; // ensuring server is ready
 };

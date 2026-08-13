@@ -10,16 +10,23 @@ UNIX DOMAIN FUNCTIONS
 
 void Client::client_send_data_server_connection_unix_domain(const char* data, Connection &connection){
     struct sockaddr_un addr = connection.getAddrUn();
-    // open socket for client
     int local_client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if(connect(local_client_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0){ // unexpected error
-        std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not connect." << std::endl;
-        close(local_client_fd);
-        return;
+    bool success = true;
+
+    if(local_client_fd == -1){
+        std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not create socket." << std::endl;
+        success = false;
     }
-    send(local_client_fd, data, strlen(data),0);
-    // close local socket as this is different from one on line 75
-    close(local_client_fd);
+    else if(connect(local_client_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0){
+        std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not connect." << std::endl;
+        success = false;
+    }
+    else if(send(local_client_fd, data, strlen(data), 0) == -1){
+        std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not send data." << std::endl;
+        success = false;
+    }
+
+    if(local_client_fd != -1) close(local_client_fd);  // only close valid fd
 }
 
 /*

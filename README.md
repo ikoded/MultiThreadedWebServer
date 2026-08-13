@@ -1,6 +1,6 @@
 # MultiThreadedWebServer
 
-A low level C++ multithreaded webserver for fun. Wanting to learn low level networking and multi threaded request handling.
+A low level C++ multithreaded webserver for fun. Wanting to learn low level networking and multi threaded request handling. Currently it is not a web server since it is only UNIX Domain but that was the natural progression I wanted for learning.
 
 ---
 
@@ -22,5 +22,16 @@ This is very important as this can cause very bad errors if not handled properly
   - Errors are definitely hard to read with this, you just need to ensure each socket has a close.
 
 - Another one you can use to watch in second terminal as runs is: `watch -n 1 'ps aux | grep webserver; ss -ax | grep mysocket'`
+
+---
+
+## Future Development
+
+### TCP/IP WebServer
+
+Going to add TCP/IP hosting next. The big differences I know for now is:
+
+  - AF_INET/6
+  - sockaddr_in
 
 ---

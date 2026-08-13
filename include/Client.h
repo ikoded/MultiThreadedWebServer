@@ -6,6 +6,6 @@
 
 class Client {
     public:
-        // Client Functions
+        // Client
         void client_send_data_server_connection_unix_domain(const char* data, Connection &connection);
 };
