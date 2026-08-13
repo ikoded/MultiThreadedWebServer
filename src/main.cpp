@@ -29,7 +29,7 @@ int main(){
     Client client; // Client Threads that call to Server
 
     // Create connection at /tmp/mysocket, Server Thread
-    std::thread serverThread(&Connection::server_connection_unix_domain,&connection, SOCKET_PATH, MAX_CLIENT_THREADS);
+    std::thread serverThread(&Connection::server_connection_unix_domain,&connection, MAX_CLIENT_THREADS);
 
     // Set up worker threads and run
     std::vector<std::thread> clientThreads;

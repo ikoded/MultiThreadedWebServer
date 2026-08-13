@@ -18,7 +18,7 @@ class Connection{
 
         // UNIX Domains request functions
         // Server
-        void server_connection_unix_domain(const char* SOCKET_PATH, const int MAX_CLIENT_THREADS);
+        void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
         bool server_read_data_client_connection_unix_domain();
         Connection();
     private:

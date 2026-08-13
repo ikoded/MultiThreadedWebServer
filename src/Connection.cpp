@@ -42,9 +42,9 @@ void Connection::server_connection_unix_domain(const int MAX_CLIENT_THREADS){
         exit(1);
     }
 
-    std::cout << "Server Thread: Binding to " << server_fd << " at " << &addr << std::endl;
+    std::cout << "Server Thread: Binding to " << server_fd << " at " << &addr_un << std::endl;
     // bind the socket to the address with size of addr struct
-    if(bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) == -1){
+    if(bind(server_fd, (struct sockaddr*)&addr_un, sizeof(addr_un)) == -1){
         close(server_fd);
         std::cout << "Server Thread: Server binding error";
         return;
