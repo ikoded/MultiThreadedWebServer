@@ -1,4 +1,5 @@
 #include "../include/Connection.h"
+#include "../include/Client.h"
 
 /*
 
@@ -6,28 +7,48 @@ GETTERS & SETTERS
 
 */
 
-void Connection::setAddrUn(struct sockaddr_un addr){
-    this->addr_un = addr;
-}
-
 struct sockaddr_un Connection::getAddrUn(){
     return this->addr_un;
 }
 
-void Connection::setClientFd(int client_fd){
-    this->client_fd = client_fd;
+void Connection::setAddrUn(struct sockaddr_un addr){
+    this->addr_un = addr;
 }
 
 int Connection::getClientFd(){
     return this->client_fd;
 }
 
-void Connection::setServerFd(int server_fd){
-    this->server_fd = server_fd;
+void Connection::setClientFd(int client_fd){
+    this->client_fd = client_fd;
 }
 
 int Connection::getServerFd(){
     return this->server_fd;
+}
+
+void Connection::setServerFd(int server_fd){
+    this->server_fd = server_fd;
+}
+
+int Connection::getClientsProccessed(){
+    return this->clients_proccessed;
+}
+
+void Connection::setClientsProccessed(int clients_proccessed){
+    this->clients_proccessed = clients_proccessed;
+}
+
+void Connection::incrementClientsProccessed(){
+    this->clients_proccessed++;
+}
+
+bool Connection::getServerReady(){
+    return this->server_ready;
+}
+
+void Connection::setServerReady(bool server_ready){
+    this->server_ready = server_ready;
 }
 
 /*
@@ -38,8 +59,12 @@ UNIX DOMAIN FUNCTIONS
 
 // Server
 
-void Connection::server_connection_unix_domain(const char* SOCKET_PATH){
+void Connection::server_connection_unix_domain(const char* SOCKET_PATH, const int MAX_CLIENT_THREADS){
     struct sockaddr_un addr;
+    char buffer[255] = {0};
+    std::ofstream myFile("../data/thread-message.txt", std::ios::app);
+    myFile << "RUN WITH " << MAX_CLIENT_THREADS << " MAX CLIENT THREADS" << "\n";
+    myFile.close();
 
     std::cout << "Server Thread: Creating socket" << std::endl;
     int server_fd = socket(AF_UNIX, SOCK_STREAM, 0); // (DOMAIN TYPE PROTOCOL)
@@ -62,63 +87,74 @@ void Connection::server_connection_unix_domain(const char* SOCKET_PATH){
 
     std::cout << "Server Thread: Binding to " << server_fd << " at " << &addr << std::endl;
     // bind the socket to the address with size of addr struct
-    bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
+    if(bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) == -1){
+        close(server_fd);
+        std::cout << "Server binding error";
+        return;
+    }
 
-    listen(server_fd,1); // listens for client requests, only 1 request but this will be changed
+    // listens for client requests
+    if(listen(server_fd,MAX_CLIENT_THREADS)==-1){
+        close(server_fd);
+        std::cout << "Server listening error";
+        return;
+    }
 
     // now connection is open set server_fd and sockaddr_un
     setServerFd(server_fd);
     setAddrUn(addr);
+    setServerReady(true);
 
-    // accept a client request and return client file descriptor if not -1 (worked)
-    std::cout << "Server Thread: Allowing client(s) to access" << std::endl;
-    int server_client_fd = accept(server_fd,NULL,NULL); // will wait here until it comes in
-    if(server_client_fd==-1){ // unexpected error
-        std::cout << "Server Thread: Error accepting client" << std::endl;
-        exit(1);
+    // will eventually leave if max requests hit
+    while(true && getClientsProccessed() < MAX_CLIENT_THREADS){
+        // accept a client request and return client file descriptor if not -1 (worked)
+        std::cout << "Server Thread: Allowing client(s) to access" << std::endl;
+        int server_client_fd = accept(server_fd,nullptr,nullptr); // will wait here until it comes in
+        if(server_client_fd==-1){ // unexpected error
+            std::cout << "Server Thread: Error accepting client" << std::endl;
+            close(server_client_fd);
+            break;
+        }
+        // set client fd for reference, will need changed when testing many threads/requests
+        setClientFd(server_client_fd);
+        // this means it connected
+        std::cout << "Server Thread: Client connected at " << server_client_fd << std::endl;
+        // read the data from the clients
+        if(server_read_data_client_connection_unix_domain() == false){
+            // could not read properly
+            close(server_client_fd);
+            break;
+        }
+
+        close(server_client_fd);
     }
-    // set client fd for reference, will need changed when testing many threads/requests
-    setClientFd(server_client_fd);
-    // this means it connected
-    std::cout << "Server Thread: Client connected at " << server_client_fd << std::endl;
 
-    // read the data from the client
-    server_read_data_client_connection_unix_domain();
+    myFile.open("../data/thread-message.txt", std::ios::app);
+    myFile << "\n\n";
+    myFile.close();
 
     // close these as they are no longer needed
     close(server_fd);
-    close(server_client_fd);
 }
 
-void Connection::server_read_data_client_connection_unix_domain(){
+bool Connection::server_read_data_client_connection_unix_domain(){
     int client_fd = getClientFd();
 
     // client data max buffer size, max 255 char
     char buffer[255] = {0};
     // try to recieve data now
     if(recv(client_fd, buffer, (sizeof(buffer) - 1), 0) != -1){
-        std::cout << "Server Thread: Client data received, `" << buffer << "`" << std::endl;
+        std::ofstream myFile("../data/thread-message.txt", std::ios::app);
+        myFile << buffer << " "; // this can come in random so each run looks different
+        myFile.close();
+
+        incrementClientsProccessed(); // increment so we can tell how many threads server actually worked on, end metrics
+        return true;
     }else{ // unexpected error
-        std::cout << "Server Thread: Error recieving data from client " << client_fd << std::endl;
-        exit(1);
+        std::cout << "Server Thread: Error receiving data from client " << client_fd << std::endl;
+        
+        return false;
     }
-}
-
-// Client
-
-void Connection::client_send_data_server_connection_unix_domain(const char* data){
-    struct sockaddr_un addr = getAddrUn();
-    // open socket for client
-    int local_client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
-    std::cout << "Client Thread: Attempting to connect as client " << local_client_fd << " at " << &addr << std::endl;
-    if(connect(local_client_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0){ // unexpected error
-        std::cout << "Client Thread: Could not connect." << std::endl;
-    }
-
-    std::cout << "Client Thread: Sending data as client " << local_client_fd << std::endl;
-    send(local_client_fd, data, strlen(data),0);
-    // close local socket as this is different from one on line 75
-    close(local_client_fd);
 }
 
 /*

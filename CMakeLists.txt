@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_executable(webserver
     "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/Connection.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/Client.cpp"
 )
 
 # Add target dir for headers
