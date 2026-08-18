@@ -122,7 +122,7 @@ void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
     }
 
     std::cout << "Server Thread: Binding to " << server_fd << " at " << &IPv4Address.sin_addr << std::endl;
-    if(bind(server_fd, (struct sockaddr*)&IPv4Address, sizeof(IPv4Address.sin_addr)) == -1){
+    if(bind(server_fd, reinterpret_cast<sockaddr*>(&IPv4Address), sizeof(IPv4Address)) == -1){
         close(server_fd);
         std::cout << "Server Thread: Failed to bind to " << server_fd << std::endl;
         return;

@@ -7,6 +7,7 @@ UNIX DOMAIN FUNCTIONS
 */
 
 void Client::client_send_data_server_connection_unix_domain(const char* data, Connection &connection){
+    // grab sockaddr_un
     struct sockaddr_un addr = connection.getAddrUn();
     int local_client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     bool success = true;
@@ -34,14 +35,17 @@ TCP/IP DOMAIN FUNCTIONS
 */
 
 void Client::client_send_data_server_connection_tcp_domain(const char* data, Connection &connection){
+    // grab IPv4Address that has struct for sockaddr_in
     struct sockaddr_in addr = connection.getAddrIn();
+    // create a client to connect to server thread using AF_INET
     int local_client_fd = socket(AF_INET, SOCK_STREAM, 0);
     bool success = true;
 
     if(local_client_fd==-1){
         std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not create socket." << std::endl;
         success = false;
-    }else if(connect(local_client_fd, (struct sockaddr*)&addr, sizeof(&addr)) == -1){
+    // reinterpret case is needed to treat the sockaddr_in as sockaddr so it works
+    }else if(connect(local_client_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1){
         std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not create connect." << std::endl;
         success = false;
     }else if(send(local_client_fd, data, strlen(data),0) == -1){

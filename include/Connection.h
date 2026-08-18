@@ -1,13 +1,14 @@
 #pragma once
 #include <unistd.h> // for unlink
 #include <sys/socket.h> // for Connection AND Client, creating socker,binding,listening,accepting
-#include <netinet/in.h> 
-#include <arpa/inet.h>
 #include <sys/un.h> // Local AF_UNIX
 #include <iostream> // standard out
 #include <filesystem> // filesystem for checking UNIX Domain socket (for fun)
 #include <fstream> // for Connection AND Client, ensures thread safe locks
 #include <atomic> // thread safe counter
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <cstring> // for reinterpret cast
 
 class Connection{
     public:
