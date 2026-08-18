@@ -14,18 +14,21 @@ class Connection{
         // Getters (needed for external classes)
         struct sockaddr_un getAddrUn();
 
+        struct sockaddr_in getAddrIn();
+
         int getClientsProccessed();
 
         bool getServerReady();
 
         // UNIX Domains request functions
-        // Server
         void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
-        bool server_read_data_client_connection_unix_domain();
-        Connection();
 
         // TCP/IP Domains request functions
         void server_connection_tcp_domain(const int MAX_CLIENT_THREADS);
+
+        // Both Domains
+        bool server_read_data_client_connection(std::string filename);
+        Connection();
     private:
         // UNIX Domains
         struct sockaddr_un addr_un; // address of socket unix domain
