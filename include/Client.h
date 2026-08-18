@@ -7,5 +7,8 @@
 class Client {
     public:
         // Client
+        // Unix Domain
         void client_send_data_server_connection_unix_domain(const char* data, Connection &connection);
+
+        // TCP/IP Domain
 };

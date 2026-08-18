@@ -1,6 +1,8 @@
 #pragma once
 #include <unistd.h> // for unlink
 #include <sys/socket.h> // for Connection AND Client, creating socker,binding,listening,accepting
+#include <netinet/in.h> 
+#include <arpa/inet.h>
 #include <sys/un.h> // Local AF_UNIX
 #include <iostream> // standard out
 #include <filesystem> // filesystem for checking UNIX Domain socket (for fun)
@@ -21,11 +23,17 @@ class Connection{
         void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
         bool server_read_data_client_connection_unix_domain();
         Connection();
+
+        // TCP/IP Domains request functions
+        void server_connection_tcp_domain(const int MAX_CLIENT_THREADS);
     private:
         // UNIX Domains
         struct sockaddr_un addr_un; // address of socket unix domain
         int client_fd; // setting clientfd for passing
         int server_fd; // setting serverfd for passing
+        // TCP/IP Domains
+        struct sockaddr_in IPv4Address{};
+        // Global
         std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
         bool server_ready = false; // ensuring server is ready, not atomic since only one thread touches this
         // Configurables/Constants

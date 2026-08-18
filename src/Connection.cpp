@@ -118,11 +118,13 @@ bool Connection::server_read_data_client_connection_unix_domain(){
 }
 
 Connection::Connection(){
+    // UNIX DOMAIN
+
     // make sure file does not exist already so no errors happen about used address
     unlink(SOCKET_PATH);
     // sockaddr_un is the address structure used for AF_UNIX sockets
     // It stores a local filesystem path, not an IP address or port
-    // Zero the entire struct to avoid garbage values in padding/unused fields
+    // Zero the entire struct to avoid unneccesary values in padding/unused fields
     memset(&addr_un, 0, sizeof(addr_un));
 
     // AF_UNIX means this is a local socket, not TCP/IP
@@ -131,6 +133,12 @@ Connection::Connection(){
     strncpy(addr_un.sun_path, SOCKET_PATH, sizeof(addr_un.sun_path) - 1);
     // add null terminator
     addr_un.sun_path[sizeof(addr_un.sun_path) - 1] = '\0';
+
+    // TCP/IP DOMAIN
+    // using wrapper instead of manipulating sa_data directly
+    IPv4Address.sin_family = AF_INET;
+    IPv4Address.sin_port = htons(8080);
+    inet_pton(AF_INET, "localhost", &IPv4Address.sin_addr);
 }
 
 /*
@@ -139,3 +147,32 @@ TCP/IP DOMAIN FUNCTIONS
 (TODO)
 
 */
+
+void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
+    std::cout << "Server Thread: Creating Socket" << std::endl;
+    // SOCK_STREAM will default to TCP since using AF_INET
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if(server_fd == -1){
+        std::cout << "Server Thread: Failed to create socket with " << AF_INET << " & " << SOCK_STREAM << std::endl;
+        exit(1);
+    }
+
+    std::cout << "Server Thread: Binding to " << server_fd << " at " << &IPv4Address.sin_addr << std::endl;
+    if(bind(server_fd, (struct sockaddr*)&IPv4Address, sizeof(IPv4Address.sin_addr)) == -1){
+        close(server_fd);
+        std::cout << "Server Thread: Failed to bind to " << server_fd << std::endl;
+        return;
+    }
+
+    std::cout << "Server Thread: Opening for listening" << std::endl;
+    if(listen(server_fd,MAX_CLIENT_THREADS)==-1){
+        close(server_fd);
+        std::cout << "Server Thread: Server listening error" << std::endl;
+        return;
+    }
+
+    // Set server open and set the server_fd
+    this->server_fd = server_fd;
+    this->server_ready = true;
+}
