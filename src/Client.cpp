@@ -2,13 +2,14 @@
 
 /*
 
-UNIX DOMAIN FUNCTIONS
+UNIX DOMAIN FUNCTION
 
 */
 
 void Client::client_send_data_server_connection_unix_domain(const char* data, Connection &connection){
     // grab sockaddr_un
     struct sockaddr_un addr = connection.getAddrUn();
+    // open socket using same AF_UNIX/SOCK_STREAM as Server
     int local_client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
     bool success = true;
 
@@ -16,6 +17,7 @@ void Client::client_send_data_server_connection_unix_domain(const char* data, Co
         std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not create socket." << std::endl;
         success = false;
     }
+    // converts to C friendly sockaddr, does not need reinterpret cast
     else if(connect(local_client_fd, (struct sockaddr*)&addr, sizeof(addr)) != 0){
         std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not connect." << std::endl;
         success = false;
@@ -30,7 +32,7 @@ void Client::client_send_data_server_connection_unix_domain(const char* data, Co
 
 /*
 
-TCP/IP DOMAIN FUNCTIONS
+TCP/IP DOMAIN FUNCTION
 
 */
 
@@ -44,7 +46,7 @@ void Client::client_send_data_server_connection_tcp_domain(const char* data, Con
     if(local_client_fd==-1){
         std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not create socket." << std::endl;
         success = false;
-    // reinterpret case is needed to treat the sockaddr_in as sockaddr so it works
+    // reinterpret cast is needed to treat the sockaddr_in as sockaddr
     }else if(connect(local_client_fd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) == -1){
         std::cout << "Client Thread (" << std::this_thread::get_id() << "): Could not create connect." << std::endl;
         success = false;

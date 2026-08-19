@@ -14,34 +14,29 @@ class Connection{
     public:
         // Getters (needed for external classes)
         struct sockaddr_un getAddrUn();
-
         struct sockaddr_in getAddrIn();
+        int getClientsProccessed(); // used in Client
+        bool getServerReady(); // used in Client
 
-        int getClientsProccessed();
-
-        bool getServerReady();
-
-        // UNIX Domains request functions
+        // UNIX Domain Server Start
         void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
-
-        // TCP/IP Domains request functions
+        // TCP Domain Server Start
         void server_connection_tcp_domain(const int MAX_CLIENT_THREADS);
 
-        // Both Domains
+        // UNIX/TCP Shared Functions
         bool server_read_data_client_connection(std::string filename);
         Connection();
     private:
-        // UNIX Domains
+        // UNIX Domain
         struct sockaddr_un addr_un; // address of socket unix domain
+        const char* SOCKET_PATH = "/tmp/mysocket"; // constant place for socket path
+        // TCP Domain
+        struct sockaddr_in IPv4Address{};
+        // Shared Variables
         int client_fd; // setting clientfd for passing
         int server_fd; // setting serverfd for passing
-        // TCP/IP Domains
-        struct sockaddr_in IPv4Address{};
-        // Global
         std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
         bool server_ready = false; // ensuring server is ready, not atomic since only one thread touches this
-        // Configurables/Constants
-        const char* SOCKET_PATH = "/tmp/mysocket"; // constant place for socket path
         char buffer[255] = {0}; // max buffer size of data
         
 };

@@ -14,11 +14,11 @@ First run `cmake -S . -B build`, and then build with `cmake --build build -j`, f
 
 This is very important as this can cause very bad errors if not handled properly. With WSL, if configured poorly, it has the capability of crashing your system with a UNEXPECTED_KERNEL_MODE_TRAP.
 
-- The first thing I check is `ss -lx | grep /tmp` and `ss -ax | grep /tmp` to make sure no leftover `/tmp/mysocket` exists (for Unix Domain specifically). I check `ss -ltnp | grep ':8080'` & `lsof -nP -iTCP:8080` to make sure the port 8080 is cleaned up and not owned.
+- The first thing I check is `ss -lx | grep /tmp` and `ss -ax | grep /tmp` to make sure no leftover `/tmp/mysocket` exists (for UNIX Domain specifically). I check `ss -ltnp | grep ':8080'` & `lsof -nP -iTCP:8080` to make sure the port 8080 is cleaned up and not owned (for TCP Domain specifically).
 
 - Then I check memory leaks with valgrind: `valgrind --leak-check=full --show-leak-kinds=all ./build/webserver`
 
-- Then I use strace to ensure all sockets in program closed properly with: `strace -e trace=open,close,socket,bind,listen -f ./build/webserver`
+- Then I use strace to ensure all sockets in program closed properly with: `strace -e trace=open,close,socket,bind,listen -f ./build/webserver` or `strace -f -e trace=network,close ./build/webserver` for connect/send/recv.
   - Errors are definitely hard to read with this, you just need to ensure each socket has a close.
 
 - Another one you can use to watch in second terminal as runs is: `watch -n 1 'ps aux | grep webserver; ss -ax | grep mysocket'`
@@ -27,3 +27,10 @@ This is very important as this can cause very bad errors if not handled properly
 
 ## Future Development
 
+### Cuda Programming
+
+Would like to bring my GPU in the mix to do things such as add a Gaussian Filter to an image pixel by pixel (needs to be large image to be worth it). This server can certainly do that now that both Domains are setup properly. I have made a correctly setup Client Server model.
+
+### HTML Page
+
+I would also like to bring in my HTML/JS skills for fun just to show how a server can be hosted through this.
