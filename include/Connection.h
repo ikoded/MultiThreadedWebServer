@@ -6,30 +6,37 @@
 #include <filesystem> // filesystem for checking UNIX Domain socket (for fun)
 #include <fstream> // for Connection AND Client, ensures thread safe locks
 #include <atomic> // thread safe counter
+#include <netinet/in.h> // for sockaddr_in
+#include <arpa/inet.h> // for inet_pton (presenation to network) to convert ip to binary
+#include <cstring> // for reinterpret cast
 
 class Connection{
     public:
-        // Getters (needed for external classes)
+        // Getters (needed for Client class)
         struct sockaddr_un getAddrUn();
-
+        struct sockaddr_in getAddrIn();
         int getClientsProccessed();
-
         bool getServerReady();
 
-        // UNIX Domains request functions
-        // Server
+        // UNIX Domain Server Start
         void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
-        bool server_read_data_client_connection_unix_domain();
+        // TCP Domain Server Start
+        void server_connection_tcp_domain(const int MAX_CLIENT_THREADS);
+
+        // UNIX/TCP Shared Functions
+        bool server_read_data_client_connection(std::string filename);
         Connection();
     private:
-        // UNIX Domains
+        // UNIX Domain
         struct sockaddr_un addr_un; // address of socket unix domain
+        const char* SOCKET_PATH = "/tmp/mysocket"; // constant place for socket path
+        // TCP Domain
+        struct sockaddr_in IPv4Address{};
+        // Shared Variables
         int client_fd; // setting clientfd for passing
         int server_fd; // setting serverfd for passing
         std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
         bool server_ready = false; // ensuring server is ready, not atomic since only one thread touches this
-        // Configurables/Constants
-        const char* SOCKET_PATH = "/tmp/mysocket"; // constant place for socket path
         char buffer[255] = {0}; // max buffer size of data
         
 };

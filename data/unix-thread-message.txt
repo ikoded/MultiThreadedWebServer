@@ -1,0 +1,21 @@
+RUN WITH 10 MAX CLIENT THREADS
+This_3 Is_4 Hello_1 Server_2 Your_5 Captain_6 Speaking_7 Through_8 Client_9 Threads_10 
+
+RUN WITH 10 MAX CLIENT THREADS
+Server_2 Hello_1 This_3 Is_4 Your_5 Captain_6 Speaking_7 Threads_10 Through_8 Client_9 
+
+RUN WITH 10 MAX CLIENT THREADS
+Hello_1 Server_2 Speaking_7 Through_8 This_3 Is_4 Your_5 Captain_6 Client_9 Threads_10 
+
+RUN WITH 10 MAX CLIENT THREADS
+Server_2 This_3 Hello_1 Is_4 Your_5 Captain_6 Client_9 Speaking_7 Through_8 Threads_10 
+
+RUN WITH 10 MAX CLIENT THREADS
+Your_5 Hello_1 Speaking_7 Server_2 This_3 Captain_6 Is_4 Through_8 Threads_10 Client_9 
+
+RUN WITH 10 MAX CLIENT THREADS
+Server_2 Hello_1 This_3 Is_4 Your_5 Captain_6 Threads_10 Speaking_7 Through_8 Client_9 
+
+RUN WITH 10 MAX CLIENT THREADS
+Server_2 Hello_1 This_3 Is_4 Speaking_7 Captain_6 Your_5 Through_8 Client_9 Threads_10 
+
