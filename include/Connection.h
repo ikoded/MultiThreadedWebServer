@@ -12,11 +12,11 @@
 
 class Connection{
     public:
-        // Getters (needed for external classes)
+        // Getters (needed for Client class)
         struct sockaddr_un getAddrUn();
         struct sockaddr_in getAddrIn();
-        int getClientsProccessed(); // used in Client
-        bool getServerReady(); // used in Client
+        int getClientsProccessed();
+        bool getServerReady();
 
         // UNIX Domain Server Start
         void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
