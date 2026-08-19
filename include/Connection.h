@@ -6,8 +6,8 @@
 #include <filesystem> // filesystem for checking UNIX Domain socket (for fun)
 #include <fstream> // for Connection AND Client, ensures thread safe locks
 #include <atomic> // thread safe counter
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <netinet/in.h> // for sockaddr_in
+#include <arpa/inet.h> // for inet_pton (presenation to network) to convert ip to binary
 #include <cstring> // for reinterpret cast
 
 class Connection{

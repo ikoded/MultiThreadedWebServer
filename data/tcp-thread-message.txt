@@ -19,12 +19,3 @@ Server_2 This_3 Hello_1 Is_4 Your_5 Threads_10 Captain_6 Speaking_7 Through_8 Cl
 RUN WITH 10 MAX CLIENT THREADS
 Server_2 Is_4 Hello_1 This_3 Your_5 Speaking_7 Through_8 Client_9 Captain_6 Threads_10 
 
-RUN WITH 10 MAX CLIENT THREADS
-Hello_1 Server_2 This_3 Is_4 Your_5 Speaking_7 Captain_6 Threads_10 Client_9 Through_8 
-
-RUN WITH 10 MAX CLIENT THREADS
-Hello_1 Server_2 This_3 Is_4 Your_5 Captain_6 Speaking_7 Through_8 Client_9 Threads_10 
-
-RUN WITH 10 MAX CLIENT THREADS
-Hello_1 Server_2 This_3 Is_4 Your_5 Captain_6 Speaking_7 Through_8 Client_9 Threads_10 
-
