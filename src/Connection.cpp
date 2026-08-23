@@ -186,23 +186,27 @@ Both Unix & TCP/IP Domains
 bool Connection::server_read_data_client_connection(std::string filename){
     // get client fd from current client fd
     int client_fd = this->client_fd;
+    std::string received_string;
     // try to recieve data now
     // ssize_t required for -1 handling, size_t is unsigned and therefore cannot be negative
     // sizeof(buffer) - 1 is saving room for null terminator
-    ssize_t recieved_bytes = recv(client_fd, buffer, (sizeof(buffer)-1),0);
-    if(recieved_bytes > 0){ // Data received and was not empty
-        buffer[recieved_bytes] = '\0'; // set null terminator to use as proper C string
+    ssize_t received_bytes;
+    while((received_bytes = recv(client_fd, buffer, (sizeof(buffer)-1),0)) > 0){
+        // this is needed to handle the null terminator automatically
+        received_string.append(buffer,received_bytes);
+        clients_proccessed++; // increment so we can tell how many threads server actually worked on, end metrics
+    }
+
+    if(received_bytes==-1){
+        std::cerr << "Server Thread: Error receiving data from client " << client_fd << "." << std::endl;
+        return false;
+    }else{
         std::ofstream myFile(filename, std::ios::app); // append to file
         // this can come in random so each run looks different after first
         // it is random due to threading, TCP ensures order within SAME connection
-        myFile << buffer << " ";
+        myFile << received_string << " ";
         myFile.close(); // make sure to close
-
-        clients_proccessed++; // increment so we can tell how many threads server actually worked on, end metrics
         return true;
-    }else{ // unexpected error
-        std::cerr << "Server Thread: Error receiving data from client " << client_fd << "." << std::endl;
-        return false;
     }
 }
 
