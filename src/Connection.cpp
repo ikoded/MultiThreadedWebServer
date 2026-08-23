@@ -194,13 +194,13 @@ bool Connection::server_read_data_client_connection(std::string filename){
     while((received_bytes = recv(client_fd, buffer, (sizeof(buffer)-1),0)) > 0){
         // this is needed to handle the null terminator automatically
         received_string.append(buffer,received_bytes);
-        clients_proccessed++; // increment so we can tell how many threads server actually worked on, end metrics
     }
 
     if(received_bytes==-1){
         std::cerr << "Server Thread: Error receiving data from client " << client_fd << "." << std::endl;
         return false;
     }else{
+        clients_proccessed++; // increment so we can tell how many threads server actually worked on, end metrics
         std::ofstream myFile(filename, std::ios::app); // append to file
         // this can come in random so each run looks different after first
         // it is random due to threading, TCP ensures order within SAME connection
