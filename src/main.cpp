@@ -25,21 +25,20 @@ void metrics(Connection &connection, auto execution_time){
 // choice menu
 char chooseDomain(){
     char choice;
-    std::cout << "1. Unix Domain\n2. TCP/IP Domain\nChoice(1-2): ";
+    std::cout << "1. Unix Domain\n2. TCP Domain\nChoice(1-2): ";
     std::cin >> choice;
     std::cout << std::endl;
 
     return choice;
 }
 
-// start unix if 1 chosen
-void startUnixDomain(Connection &connection, Client &client){
-    // create connection at /tmp/mysocket, Server Thread
-    std::thread serverThread(&Connection::server_connection_unix_domain,&connection, MAX_CLIENT_THREADS);
-
+// start clients based on choice
+// want this also to be flexible so I can utilize it for other functionality
+void startClients(Connection &connection, Client &client, char choice){
     // set up worker threads
     std::vector<std::thread> clientThreads;
     // wait for server to be ready
+    // TODO: Change this to something akin to mutex lock so cpu does not waste cycles
     while(!connection.getServerReady()){}
     clientThreads.reserve(MAX_CLIENT_THREADS); // reserve client memory
     for(int i = 0; i < MAX_CLIENT_THREADS; ++i){
@@ -47,40 +46,48 @@ void startUnixDomain(Connection &connection, Client &client){
         const char* example_message = messages.front();
         messages.pop_front(); // pop this so you don't just grab front everytime
         // call worker threads
-        clientThreads.emplace_back(&Client::client_send_data_server_connection_unix_domain, &client, example_message, std::ref(connection));
+        if(choice=='1'){ // unix client
+            clientThreads.emplace_back(&Client::client_send_data_server_connection_unix_domain, &client, example_message, std::ref(connection));
+        }else{ // tcp client
+            clientThreads.emplace_back(&Client::client_send_data_server_connection_tcp_domain, &client, example_message, std::ref(connection));
+        }
     }
     // make sure all clients finish first
     for(auto& th : clientThreads){
         if(th.joinable()) th.join();
     }
+}
+
+// starts domain based on choice
+// want this to be flexible so I can use it for other functionality
+void startDomain(Connection &connection, Client &client, char choice){
+    // create connection at /tmp/mysocket, Server Thread
+    std::thread serverThread;
+    if(choice=='1'){ // unix domain
+        serverThread = std::thread(&Connection::server_connection_unix_domain,&connection, MAX_CLIENT_THREADS);
+    }else{ // tcp domain
+        serverThread = std::thread(&Connection::server_connection_tcp_domain,&connection,MAX_CLIENT_THREADS);
+    }
+
+    // clients are only needed for raw data
+    if(connection.getRawData()) startClients(connection, client, choice);
+    
     // make sure server thread finishes
     if(serverThread.joinable()) serverThread.join();
 }
 
-// start tcp if 2 chosen
-void startTCPDomain(Connection &connection, Client &client){
-    // start server thread on localhost:8080
-    std::thread serverThread(&Connection::server_connection_tcp_domain,&connection, MAX_CLIENT_THREADS);
+// used for tcp domain
+bool chooseDataSent(){
+    char choice;
 
-    // setup cleint threads
-    std::vector<std::thread> clientThreads;
-
-    // wait for server to be ready
-    while(!connection.getServerReady()){}
-    clientThreads.reserve(MAX_CLIENT_THREADS); // reserve client memory
-    for(int i = 0; i < MAX_CLIENT_THREADS; ++i){
-        // get example for each client
-        const char* example_message = messages.front();
-        messages.pop_front(); // remove so we can continue on to next message in next iteration
-        // allows program to create a client thread for each message it sends
-        clientThreads.emplace_back(&Client::client_send_data_server_connection_tcp_domain, &client, example_message, std::ref(connection));
+    std::cout << "Do you want to serve HTML? (y/n): ";
+    std::cin >> choice;
+    while(choice!='y' && choice!='n'){
+        std::cout << "\nPlease enter y/n: ";
+        std::cin >> choice;
     }
 
-    // clean up threads
-    for(auto& th : clientThreads){
-        if(th.joinable()) th.join();
-    }
-    if(serverThread.joinable()) serverThread.join();
+    return choice == 'y' ? true : false;
 }
 
 int main(){
@@ -94,12 +101,17 @@ int main(){
     case '1':
         std::cout << "Starting Unix Domain..." << std::endl;
         start_time = std::chrono::steady_clock::now();
-        startUnixDomain(connection, client);
+        startDomain(connection, client, '1'); // 1 is hardcoded for unix domain
+
         break;
     case '2':
         std::cout << "Starting TCP Domain..." << std::endl;
         start_time = std::chrono::steady_clock::now();
-        startTCPDomain(connection, client);
+        if(chooseDataSent()){
+            connection.setRawData(false); // set this so it uses HTTP
+        }
+        startDomain(connection, client, '2'); // 2 is hardcoded for tcp domain   
+        
         break;
     default:
         std::cout << "Wrong choice, exiting" << std::endl;

@@ -1,6 +1,6 @@
 # MultiThreadedWebServer
 
-A low level C++ multithreaded webserver for fun. Wanting to learn low level networking and multi threaded request handling. It has a menu at beginning to transfer over a Unix Domain or a TCP domain.
+A low level C++ multithreaded webserver for fun. Wanting to learn low level networking and multi threaded request handling. It has a menu at beginning to transfer over a Unix Domain or a TCP domain. I also added for TCP serving an HTML in the data to `localhost:8080`, this is to learn differences of HTML serving as well as make server more flexible
 
 ---
 
@@ -31,6 +31,6 @@ This is very important as this can cause very bad errors if not handled properly
 
 Would like to bring my GPU in the mix to do things such as add a Gaussian Filter to an image pixel by pixel (needs to be large image to be worth it). This server can certainly do that now that both Domains are setup properly. I have made a correctly setup Client Server model.
 
-### HTML Page
+### HTML Server SIGTERM Handling
 
-I would also like to bring in my HTML/JS skills for fun just to show how a server can be hosted through this.
+While not fully necessary, would be nice to cleanup resources on SIGTERM (when user presses Ctrl+C).

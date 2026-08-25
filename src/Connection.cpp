@@ -24,6 +24,43 @@ bool Connection::getServerReady(){
     return server_ready;
 }
 
+void Connection::setRawData(bool rawdata){
+    this->rawdata = rawdata;
+}
+
+bool Connection::getRawData(){
+    return rawdata;
+}
+
+/*
+
+HTTP setup
+
+*/
+
+// prepare html data in http format
+std::string prepareHTTP_HTML(){
+    std::string html;
+    std::string line;
+    int contentlength = std::filesystem::file_size("data/test.html");
+    std::ifstream myFile("data/test.html");
+    
+    while(std::getline(myFile,line)){
+        html.append(line);
+        html.append("\n");
+    }
+    
+    std::string http = 
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/html\r\n"
+    "Content-Length: " + std::to_string(html.length()) + "\r\n"
+    "Connection: close\r\n"
+    "\r\n"
+    + html;
+
+    return http;
+}
+
 /*
 
 UNIX DOMAIN SERVER START
@@ -113,11 +150,15 @@ TCP/IP DOMAIN SERVER START
 */
 
 void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
-    // file to be used for data received
-    std::string filename = "data/tcp-thread-message.txt";
+    std::string filename;
     std::ofstream myFile(filename, std::ios::app);
-    myFile << "RUN WITH " << MAX_CLIENT_THREADS << " MAX CLIENT THREADS" << "\n";
-    myFile.close(); // close file as it will be used in loop
+    if(rawdata){ // only needed for raw data side
+        // file to be used for data received
+        filename = "data/tcp-thread-message.txt"; 
+        myFile.open(filename, std::ios::app);
+        myFile << "RUN WITH " << MAX_CLIENT_THREADS << " MAX CLIENT THREADS" << "\n";
+        myFile.close(); // close file as it will be used in loop
+    }
 
     std::cout << "Server Thread: Creating Socket." << std::endl;
     // SOCK_STREAM is default for TCP using AF_INET
@@ -152,7 +193,8 @@ void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
 
     std::cout << "Server Thread: Accepting client(s) to access." << std::endl;
     // breaks once MAX_CLIENTS_THREADS amount of clients are listened to
-    while(clients_proccessed < MAX_CLIENT_THREADS){
+    // or continue until control c for HTML server
+    while(clients_proccessed < MAX_CLIENT_THREADS || !rawdata){
         int server_client_fd = accept(server_fd, nullptr, nullptr); // waiting for client
         if(server_client_fd == -1){
             std::cerr << "Server Thread: Could not accept client." << std::endl;
@@ -162,11 +204,27 @@ void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
         client_fd = server_client_fd;
         std::cout << "Server Thread: Thread connected at " << server_client_fd << "." << std::endl;
 
-        if(!server_read_data_client_connection(filename)){
+        if(!rawdata){ // send HTTP back with HTML
+            // receive GET from client browser
+            ssize_t received_bytes = recv(server_client_fd, buffer, sizeof(buffer)-1,0);
+            std::string received_string(buffer, received_bytes);
+            std::cout << "Browser sent: \n" << received_string << "\n";
+
+            // get http with html to send back to browser client
+            std::string http = prepareHTTP_HTML();
+            // send the http header with html
+            send(server_client_fd,http.c_str(),http.length(),0);
+            // close client so it loads
             close(server_client_fd);
-            break;
+        }else{ // raw data
+            if(!server_read_data_client_connection(filename)){
+                close(server_client_fd);
+                break;
+            }
         }
         close(server_client_fd);
+
+        
     }
 
     // add new lines to end for clarity in next runs
