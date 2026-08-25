@@ -17,6 +17,8 @@ class Connection{
         struct sockaddr_in getAddrIn();
         int getClientsProccessed();
         bool getServerReady();
+        void setRawData(bool rawdata);
+        bool getRawData();
 
         // UNIX Domain Server Start
         void server_connection_unix_domain(const int MAX_CLIENT_THREADS);
@@ -36,7 +38,7 @@ class Connection{
         int client_fd; // setting clientfd for passing
         int server_fd; // setting serverfd for passing
         std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
-        bool server_ready = false; // ensuring server is ready, not atomic since only one thread touches this
-        char buffer[255] = {0}; // max buffer size of data
-        
+        std::atomic<bool> server_ready = false; // ensuring server is ready, atomic in case race conditions
+        char buffer[255] = {0}; // max buffer size of raw data
+        bool rawdata = true; // used for tcp domain, this means raw data is sent by default       
 };

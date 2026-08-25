@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <!-- For CSS -->
+    <style>
+        #containeranimation {
+            width: 500px;
+            height: 500px;
+            position: relative;
+            background: black;
+        }
+        #animation {
+            width: 10px;
+            height: 10px;
+            position: relative;
+            background: red;
+        }
+    </style>
+    <body>
+        <button id="startanimation">Start Animation!</button>
+        <div id="containeranimation">
+            <div id="animation"></div>
+        </div>
+        <script>
+            let count = 0;
+            let id = null;
+            const button = document.getElementById("startanimation");
+            document.addEventListener('click', () => {
+                id = setInterval(animation,5);
+            });
+
+            // Random animation that goes everywhere
+            function animation() {
+                const box = document.getElementById("animation");
+                const lor = randomDirection();
+                const pos = randomPos();
+
+                // 490 derived from 500x500 and 10x10
+                if(count == 490){
+                    clearInterval(id);
+                }else{
+                    // Move left
+                    if(lor==0){
+                        box.style.left = pos + 'px';
+                    }else{ // Move right
+                        box.style.right = pos + 'px';
+                    }
+                    box.style.top = pos + 'px';
+
+                    count++;
+                }
+            }
+
+            function randomDirection(){
+                let x = Math.floor(Math.random() * 2);
+                return x;
+            }
+            function randomPos(){
+                let x = Math.floor(Math.random()*500);
+                return x;
+            }
+        </script>
+    </body>
+</html>
