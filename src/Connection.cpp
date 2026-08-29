@@ -275,8 +275,6 @@ Connection::Connection(){
     unlink(SOCKET_PATH);
     // sockaddr_un is the address structure used for AF_UNIX sockets
     // it stores a local filesystem path, not an IP address or port
-    // zero the entire struct to avoid unneccesary values in padding/unused fields
-    memset(&addr_un, 0, sizeof(addr_un));
 
     // AF_UNIX means this is a local UNIX Domain socket
     addr_un.sun_family = AF_UNIX;
@@ -286,8 +284,8 @@ Connection::Connection(){
     addr_un.sun_path[sizeof(addr_un.sun_path) - 1] = '\0';
 
     // TCP/IP DOMAIN
-    // set struct to zero to clean up resource usage
-    memset(&IPv4Address, 0 , sizeof(IPv4Address));
+
+    // sockaddr_in is the address structure used for TCP sockets
     // using wrapper instead of manipulating sa_data directly
     IPv4Address.sin_family = AF_INET;
     // host to network properly sets big endian 16 bits for port, 16 bit ports : [0-65535]
