@@ -30,7 +30,9 @@ class Connection{
         Connection();
     private:
         // UNIX Domain
-        struct sockaddr_un addr_un; // address of socket unix domain
+        // {} means to initalize which with sockaddr_un/in this will zero out struct
+        // do this instead of memset to zero it out
+        struct sockaddr_un addr_un{}; // address of socket unix domain
         const char* SOCKET_PATH = "/tmp/mysocket"; // constant place for socket path
         // TCP Domain
         struct sockaddr_in IPv4Address{};
