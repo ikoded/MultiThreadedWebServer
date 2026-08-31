@@ -15,8 +15,8 @@ struct sockaddr_in Connection::getAddrIn(){
     return IPv4Address;
 }
 
-int Connection::getClientsProccessed(){
-    return clients_proccessed;
+int Connection::getClientsAccepted(){
+    return clients_accepted;
 }
 
 
@@ -107,9 +107,12 @@ void Connection::server_connection_unix_domain(const int MAX_CLIENT_THREADS){
     this->server_fd = server_fd;
     server_ready = true;
 
+    std::vector<std::thread> workerThreads;
+    workerThreads.reserve(MAX_WORKER_THREADS);
+
     std::cout << "Server Thread: Allowing client(s) to access." << std::endl;
     // will eventually break loop if max clients hit OR an error happens
-    while(clients_proccessed < MAX_CLIENT_THREADS){
+    while(clients_accepted < MAX_CLIENT_THREADS){
         // accept a client request and return client file descriptor if not -1
         // if you wanted the client sockadrr and address length pass variables before using reference
         int server_client_fd = accept(server_fd,nullptr,nullptr); // will wait here until it comes in
@@ -117,18 +120,15 @@ void Connection::server_connection_unix_domain(const int MAX_CLIENT_THREADS){
             std::cerr << "Server Thread: Error accepting client." << std::endl;
             break;
         }
-        // set client fd for reference
-        client_fd = server_client_fd;
         // this means it connected
         std::cout << "Server Thread: Client connected at " << server_client_fd << "." << std::endl;
         // read the data from the client
-        if(!server_read_data_client_connection(filename)){
-            // could not read properly
-            close(server_client_fd);
-            break;
-        }
-        // close client when done
-        close(server_client_fd);
+        workerThreads.emplace_back(&Connection::server_read_data_client_connection, this, filename, server_client_fd);
+        clients_accepted++; // increment so we can tell how many threads server actually worked on, end metrics
+    }
+
+    for(auto& th : workerThreads){
+        if(th.joinable()) th.join();
     }
 
     // add new lines to end for clarity in next runs
@@ -192,17 +192,19 @@ void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
     server_ready = true;
 
     std::cout << "Server Thread: Accepting client(s) to access." << std::endl;
+
+    std::vector<std::thread> workerThreads;
+    if(rawdata) workerThreads.reserve(MAX_WORKER_THREADS); // only needed for raw data
+
     // breaks once MAX_CLIENTS_THREADS amount of clients are listened to
     // or continue until control c for HTML server
-    while(clients_proccessed < MAX_CLIENT_THREADS || !rawdata){
+    while(clients_accepted < MAX_CLIENT_THREADS || !rawdata){
         int server_client_fd = accept(server_fd, nullptr, nullptr); // waiting for client
         if(server_client_fd == -1){
             std::cerr << "Server Thread: Could not accept client." << std::endl;
             break;
         }
-        // save to class member variable
-        client_fd = server_client_fd;
-        std::cout << "Server Thread: Thread connected at " << server_client_fd << "." << std::endl;
+        std::cout << "Server Thread: Client connected at " << server_client_fd << "." << std::endl;
 
         if(!rawdata){ // send HTTP back with HTML
             // receive GET from client browser
@@ -217,14 +219,13 @@ void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
             // close client so it loads
             close(server_client_fd);
         }else{ // raw data
-            if(!server_read_data_client_connection(filename)){
-                close(server_client_fd);
-                break;
-            }
+            workerThreads.emplace_back(&Connection::server_read_data_client_connection, this, filename, server_client_fd);
+            clients_accepted++;
         }
-        close(server_client_fd);
 
-        
+        for(auto& th : workerThreads){
+            if(th.joinable()) th.join();
+        }
     }
 
     // add new lines to end for clarity in next runs
@@ -241,9 +242,7 @@ Both Unix & TCP/IP Domains
 
 */
 
-bool Connection::server_read_data_client_connection(std::string filename){
-    // get client fd from current client fd
-    int client_fd = this->client_fd;
+void Connection::server_read_data_client_connection(std::string filename, int client_fd){
     std::string received_string;
     // try to recieve data now
     // ssize_t required for -1 handling, size_t is unsigned and therefore cannot be negative
@@ -256,19 +255,19 @@ bool Connection::server_read_data_client_connection(std::string filename){
 
     if(received_bytes==-1){
         std::cerr << "Server Thread: Error receiving data from client " << client_fd << "." << std::endl;
-        return false;
     }else{
-        clients_proccessed++; // increment so we can tell how many threads server actually worked on, end metrics
         std::ofstream myFile(filename, std::ios::app); // append to file
         // this can come in random so each run looks different after first
         // it is random due to threading, TCP ensures order within SAME connection
         myFile << received_string << " ";
         myFile.close(); // make sure to close
-        return true;
     }
+
+    close(client_fd);
 }
 
-Connection::Connection(){
+Connection::Connection(int MAX_CLIENT_THREADS){
+    MAX_WORKER_THREADS = MAX_CLIENT_THREADS;
     // UNIX DOMAIN
 
     // make sure file does not exist already so no errors happen about used address
