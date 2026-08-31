@@ -22,3 +22,6 @@ Server_2 Hello_1 This_3 Is_4 Speaking_7 Captain_6 Your_5 Through_8 Client_9 Thre
 RUN WITH 10 MAX CLIENT THREADS
 Hello_1 Server_2 This_3 Is_4 Your_5 Through_8 Captain_6 Threads_10 Speaking_7 Client_9 
 
+RUN WITH 10 MAX CLIENT THREADS
+Server_2 Captain_6 Speaking_7 Through_8 Client_9 Hello_1 Threads_10 This_3 Is_4 Your_5 
+

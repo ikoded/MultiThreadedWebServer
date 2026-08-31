@@ -15,7 +15,7 @@ class Connection{
         // Getters (needed for Client class)
         struct sockaddr_un getAddrUn();
         struct sockaddr_in getAddrIn();
-        int getClientsProccessed();
+        int getClientsAccepted();
         bool getServerReady();
         void setRawData(bool rawdata);
         bool getRawData();
@@ -26,8 +26,8 @@ class Connection{
         void server_connection_tcp_domain(const int MAX_CLIENT_THREADS);
 
         // UNIX/TCP Shared Functions
-        bool server_read_data_client_connection(std::string filename);
-        Connection();
+        void server_read_data_client_connection(std::string filename, int client_fd);
+        Connection(int MAX_CLIENT_THREADS);
     private:
         // UNIX Domain
         // {} means to initalize which with sockaddr_un/in this will zero out struct
@@ -37,9 +37,9 @@ class Connection{
         // TCP Domain
         struct sockaddr_in IPv4Address{};
         // Shared Variables
-        int client_fd; // setting clientfd for passing
         int server_fd; // setting serverfd for passing
-        std::atomic<int> clients_proccessed = 0; // smart variable that knows to handle concurrent data races
+        int MAX_WORKER_THREADS; // will always equal MAX_CLIENT_THREADS
+        std::atomic<int> clients_accepted{0}; // smart variable that knows to handle concurrent data races
         std::atomic<bool> server_ready = false; // ensuring server is ready, atomic in case race conditions
         char buffer[255] = {0}; // max buffer size of raw data
         bool rawdata = true; // used for tcp domain, this means raw data is sent by default       

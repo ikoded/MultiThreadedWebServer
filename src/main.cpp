@@ -18,7 +18,7 @@ const int MAX_CLIENT_THREADS = 10; // 10 is max because only 10 messages I set u
 
 // method to print at end of program
 void metrics(Connection &connection, auto execution_time){
-    std::cout << "\nNumber of clients that succesfully contacted server: " << connection.getClientsProccessed() << " / " << MAX_CLIENT_THREADS << std::endl;
+    std::cout << "\nNumber of clients that were accepted by the server: " << connection.getClientsAccepted() << " / " << MAX_CLIENT_THREADS << std::endl;
     std::cout << "Executed in " << execution_time << std::endl;
 }
 
@@ -92,7 +92,7 @@ bool chooseDataSent(){
 
 int main(){
     std::chrono::steady_clock::time_point start_time; // placeholder
-    Connection connection; // proccesses server connections
+    Connection connection(MAX_CLIENT_THREADS); // proccesses server connections
     Client client; // client that sends data to server
 
     // allow user to choose UNIX or TCP Domain
