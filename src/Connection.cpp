@@ -244,6 +244,7 @@ Both Unix & TCP/IP Domains
 
 void Connection::server_read_data_client_connection(std::string filename, int client_fd){
     std::string received_string;
+    char buffer[8192] = {0}; // max buffer size of HTTP 8KB
     // try to recieve data now
     // ssize_t required for -1 handling, size_t is unsigned and therefore cannot be negative
     // sizeof(buffer) - 1 is saving room for null terminator
