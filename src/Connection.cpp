@@ -207,6 +207,7 @@ void Connection::server_connection_tcp_domain(const int MAX_CLIENT_THREADS){
         std::cout << "Server Thread: Client connected at " << server_client_fd << "." << std::endl;
 
         if(!rawdata){ // send HTTP back with HTML
+            char buffer[8192] = {0}; // max buffer size of HTTP 8KB
             // receive GET from client browser
             ssize_t received_bytes = recv(server_client_fd, buffer, sizeof(buffer)-1,0);
             std::string received_string(buffer, received_bytes);
@@ -244,7 +245,7 @@ Both Unix & TCP/IP Domains
 
 void Connection::server_read_data_client_connection(std::string filename, int client_fd){
     std::string received_string;
-    char buffer[8192] = {0}; // max buffer size of HTTP 8KB
+    char buffer[255] = {0}; // max buffer size of raw data
     // try to recieve data now
     // ssize_t required for -1 handling, size_t is unsigned and therefore cannot be negative
     // sizeof(buffer) - 1 is saving room for null terminator
