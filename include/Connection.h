@@ -41,6 +41,5 @@ class Connection{
         int MAX_WORKER_THREADS; // will always equal MAX_CLIENT_THREADS
         std::atomic<int> clients_accepted{0}; // smart variable that knows to handle concurrent data races
         std::atomic<bool> server_ready = false; // ensuring server is ready, atomic in case race conditions
-        char buffer[255] = {0}; // max buffer size of raw data
         bool rawdata = true; // used for tcp domain, this means raw data is sent by default       
 };
